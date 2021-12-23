@@ -2,7 +2,7 @@ from model import Transformer
 from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
-from DataLoader import SensorDataset
+from DataLoader import GaitDataset
 import logging
 import time # debugging
 from plot import *
@@ -35,7 +35,7 @@ def transformer(dataloader, EPOCH, k, frequency, path_to_save_model, path_to_sav
 
         ## TRAIN -- TEACHER FORCING
         model.train()
-        for index_in, index_tar, _input, target, sensor_number in dataloader:
+        for index_in, index_tar, _input, target, sensor_number, timestamp_src, timestamp_tar in dataloader:
         
             # Shape of _input : [batch, input_length, feature]
             # Desired input for model: [input_length, batch, feature]

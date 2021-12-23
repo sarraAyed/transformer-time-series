@@ -37,30 +37,38 @@ def plot_prediction(title, path_to_save, src, tgt, prediction, sensor_number, in
 
     # plotting
     plt.plot(idx_scr, src, '-', color = 'blue', label = 'Input', linewidth=2)
-    plt.plot(idx_tgt, tgt, '-', color = 'indigo', label = 'Target', linewidth=2)
-    plt.plot(idx_pred, prediction,'--', color = 'limegreen', label = 'Forecast', linewidth=2)
+    plt.plot(idx_tgt, tgt, '-', color = 'indigo', label = 'Real gait', linewidth=2)
+    plt.plot(idx_pred, prediction,'--', color = 'limegreen', label = 'Predicted gait', linewidth=2)
+
 
     #formatting
     plt.grid(b=True, which='major', linestyle = 'solid')
     plt.minorticks_on()
     plt.grid(b=True, which='minor', linestyle = 'dashed', alpha=0.5)
-    plt.xlabel("Time Elapsed")
-    plt.ylabel("Humidity (%)")
+    plt.xlabel("Time in seconds")
+    plt.ylabel("Gait value")
     plt.legend()
-    plt.title("Forecast from Sensor " + str(sensor_number[0]))
+    plt.title("Prediction from Patient n°" + str(sensor_number[0]))
 
     # save
     plt.savefig(path_to_save+f"Prediction_{title}.png")
     plt.close()
 
-def plot_training(epoch, path_to_save, src, prediction, sensor_number, index_in, index_tar):
+def plot_training(epoch, path_to_save, src, prediction, sensor_number, index_in, index_tar, timestamp_src=None,
+                  timestamp_tar=None):
 
     # idx_scr = index_in.tolist()[0]
     # idx_tar = index_tar.tolist()[0]
     # idx_pred = idx_scr.append(idx_tar.append([idx_tar[-1] + 1]))
+    # testtype = type(timestamp_src)
+    if (timestamp_src is not None) and (timestamp_tar is not None):
+        idx_scr = torch.flatten(timestamp_src).detach().cpu().numpy()
+        idx_pred = torch.flatten(timestamp_tar).detach().cpu().numpy()
+    else :
+        idx_scr = [i for i in range(len(src))]
+        idx_pred = [i for i in range(1, len(prediction)+1)]
 
-    idx_scr = [i for i in range(len(src))]
-    idx_pred = [i for i in range(1, len(prediction)+1)]
+
 
     plt.figure(figsize=(15,6))
     plt.rcParams.update({"font.size" : 18})
@@ -71,22 +79,27 @@ def plot_training(epoch, path_to_save, src, prediction, sensor_number, index_in,
     plt.plot(idx_scr, src, 'o-.', color = 'blue', label = 'input sequence', linewidth=1)
     plt.plot(idx_pred, prediction, 'o-.', color = 'limegreen', label = 'prediction sequence', linewidth=1)
 
-    plt.title("Teaching Forcing from Sensor " + str(sensor_number[0]) + ", Epoch " + str(epoch))
-    plt.xlabel("Time Elapsed")
-    plt.ylabel("Humidity (%)")
+    plt.title("Training with patient n° " + str(sensor_number[0]) + ", Epoch " + str(epoch))
+    plt.xlabel("Time in seconds")
+    plt.ylabel("Gait value")
     plt.legend()
     plt.savefig(path_to_save+f"/Epoch_{str(epoch)}.png")
     plt.close()
 
-def plot_training_3(epoch, path_to_save, src, sampled_src, prediction, sensor_number, index_in, index_tar):
+def plot_training_3(epoch, path_to_save, src, sampled_src, prediction, sensor_number, index_in, index_tar, timestamp_src=None, timestamp_tar=None):
 
     # idx_scr = index_in.tolist()[0]
     # idx_tar = index_tar.tolist()[0]
     # idx_pred = idx_scr.append(idx_tar.append([idx_tar[-1] + 1]))
 
-    idx_scr = [i for i in range(len(src))]
-    idx_pred = [i for i in range(1, len(prediction)+1)]
-    idx_sampled_src = [i for i in range(len(sampled_src))]
+    if timestamp_src and timestamp_tar:
+        idx_scr = timestamp_src
+        idx_pred = timestamp_tar
+        idx_sampled_src = timestamp_src
+    else:
+        idx_scr = [i for i in range(len(src))]
+        idx_pred = [i for i in range(1, len(prediction)+1)]
+        idx_sampled_src = [i for i in range(len(sampled_src))]
 
     plt.figure(figsize=(15,6))
     plt.rcParams.update({"font.size" : 18})
@@ -98,9 +111,9 @@ def plot_training_3(epoch, path_to_save, src, sampled_src, prediction, sensor_nu
     plt.plot(idx_sampled_src, sampled_src, 'o-.', color='red', label = 'sampled source', linewidth=1, markersize=10)
     plt.plot(idx_scr, src, 'o-.', color = 'blue', label = 'input sequence', linewidth=1)
     plt.plot(idx_pred, prediction, 'o-.', color = 'limegreen', label = 'prediction sequence', linewidth=1)
-    plt.title("Teaching Forcing from Sensor " + str(sensor_number[0]) + ", Epoch " + str(epoch))
-    plt.xlabel("Time Elapsed")
-    plt.ylabel("Humidity (%)")
+    plt.title("Training with patient n°" + str(sensor_number[0]) + ", Epoch " + str(epoch))
+    plt.xlabel("Time in seconds")
+    plt.ylabel("Gait value")
     plt.legend()
     plt.savefig(path_to_save+f"/Epoch_{str(epoch)}.png")
     plt.close()

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from joblib import dump
 from icecream import ic
 
-class SensorDataset(Dataset):
+class GaitDataset(Dataset):
     """Face Landmarks dataset."""
 
     def __init__(self, csv_name, root_dir, training_length, forecast_window):
@@ -58,4 +58,6 @@ class SensorDataset(Dataset):
         # save the scalar to be used later when inverse translating the data for plotting.
         dump(scaler, 'scalar_item.joblib')
 
-        return index_in, index_tar, _input, target, sensor_number
+        timestamp_src = self.df["timestamp"].values[start: start + self.T-1]
+        timestamp_tar = self.df["timestamp"].values[start + 1 : start + self.T]
+        return index_in, index_tar, _input, target, sensor_number, timestamp_src, timestamp_tar

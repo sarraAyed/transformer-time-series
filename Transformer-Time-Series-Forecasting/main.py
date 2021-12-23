@@ -1,11 +1,6 @@
 import argparse
 from train_teacher_forcing import *
 # from train_with_sampling import *
-from DataLoader import *
-from torch.utils.data import DataLoader
-import torch.nn as nn
-import torch
-from helpers import *
 from inference import *
 
 def main(
@@ -25,13 +20,17 @@ def main(
 
     clean_directory()
 
-    train_dataset = SensorDataset(csv_name = train_csv, root_dir = "Data/", training_length = training_length, forecast_window = forecast_window)
+    train_dataset = GaitDataset(csv_name = train_csv, root_dir ="Data/", training_length = training_length, forecast_window = forecast_window)
     train_dataloader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-    test_dataset = SensorDataset(csv_name = test_csv, root_dir = "Data/", training_length = training_length, forecast_window = forecast_window)
+    test_dataset = GaitDataset(csv_name = test_csv, root_dir ="Data/", training_length = training_length, forecast_window = forecast_window)
     test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=True)
+    validate_dataset = GaitDataset(csv_name = "validate_dataset.csv", root_dir ="Data/", training_length = training_length, forecast_window = forecast_window)
+    validate_dataloader = DataLoader(validate_dataset, batch_size=1, shuffle=True)
 
     best_model = transformer(train_dataloader, epoch, frequency, path_to_save_model, path_to_save_loss, path_to_save_predictions, device)
     inference(path_to_save_predictions, forecast_window, test_dataloader, device, path_to_save_model, best_model)
+
+    inference("validation/", forecast_window, validate_dataloader, device, path_to_save_model, best_model)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

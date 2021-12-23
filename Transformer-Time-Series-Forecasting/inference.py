@@ -2,7 +2,7 @@ from model import Transformer
 from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
-from DataLoader import SensorDataset
+from DataLoader import GaitDataset
 import logging
 import time # debugging
 from plot import *
@@ -13,7 +13,7 @@ from icecream import ic
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s %(message)s", datefmt="[%Y-%m-%d %H:%M:%S]")
 logger = logging.getLogger(__name__)
 
-def inference(path_to_save_predictions, forecast_window, dataloader, device, path_to_save_model, best_model):
+def inference(path_to_save_predictions, forecast_window, dataloader, device, path_to_save_model, best_model, healthy=True):
 
     device = torch.device(device)
     
@@ -27,7 +27,7 @@ def inference(path_to_save_predictions, forecast_window, dataloader, device, pat
         model.eval()
         for plot in range(25):
 
-            for index_in, index_tar, _input, target, sensor_number in dataloader:
+            for index_in, index_tar, _input, target, sensor_number, timestamp_src, timestamp_tar in dataloader:
                 
                 # starting from 1 so that src matches with target, but has same length as when training
                 src = _input.permute(1,0,2).double().to(device)[1:, :, :] # 47, 1, 7: t1 -- t47
@@ -55,12 +55,14 @@ def inference(path_to_save_predictions, forecast_window, dataloader, device, pat
                 true = torch.cat((src[1:,:,0],target[:-1,:,0]))
                 loss = criterion(true, all_predictions[:,:,0])
                 val_loss += loss
+
             
             val_loss = val_loss/10
             scaler = load('scalar_item.joblib')
             src_humidity = scaler.inverse_transform(src[:,:,0].cpu())
             target_humidity = scaler.inverse_transform(target[:,:,0].cpu())
             prediction_humidity = scaler.inverse_transform(all_predictions[:,:,0].detach().cpu().numpy())
+
             plot_prediction(plot, path_to_save_predictions, src_humidity, target_humidity, prediction_humidity, sensor_number, index_in, index_tar)
 
         logger.info(f"Loss On Unseen Dataset: {val_loss.item()}")

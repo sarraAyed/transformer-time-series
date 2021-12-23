@@ -39,6 +39,16 @@ def fill_csv_file(signal_number, file_to_write: str, files_raw: List[Dict]):
                        math.cos(seconds), math.sin(minutes), math.cos(minutes)]
                 writer.writerow(row)
 
+def get_validate_csv(signal_number):
+    sick_patient_file = {
+        "file_to_write": "Data/validate_dataset.csv",
+        "files_raw": [{
+            "id_patient": "4",
+            "file_path": "Data/original-data/GaPt03_01.txt"
+        }]
+    }
+    fill_csv_file(signal_number, sick_patient_file["file_to_write"], sick_patient_file["files_raw"])
+
 
 def get_train_csv_file(signal_number):
     train_data = {
@@ -93,6 +103,7 @@ def extract_signals_info(signal_number: int, file_to_read: str):
 
 def main(signal_number: int):
     get_train_csv_file(signal_number)
+    get_validate_csv(signal_number)
 
 
 if __name__ == "__main__":
